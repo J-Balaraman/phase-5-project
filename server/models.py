@@ -1,14 +1,12 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
-from sqlalchemy.ext.associationproxy import association_proxy
-
 from config import db
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ('-user_workout_routine')
+    serialize_rules = ('-user_workout_routine', '-password')
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
@@ -23,6 +21,16 @@ class User(db.Model, SerializerMixin):
     )
     exercise_logs = db.relationship('ExerciseLog', back_populates='user', lazy=True)
     user_metrics = db.relationship('UserMetrics', back_populates='user', lazy=True)
+
+    @validates('email')
+    def validate_email(self, key, address):
+        assert '@' in address and address.endswith('.com'), "Invalid email format"
+        return address
+
+    @validates('username')
+    def validate_username(self, key, username):
+        assert username is not None and len(username) > 0, "Username cannot be empty"
+        return username
 
 class WorkoutRoutine(db.Model, SerializerMixin):
     __tablename__ = 'workout_routines'
@@ -54,6 +62,8 @@ class ExerciseLog(db.Model, SerializerMixin):
     date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text, nullable=False)
 
+    user = db.relationship('User', back_populates='exercise_logs')
+
 class UserMetrics(db.Model, SerializerMixin):
     __tablename__ = 'user_metrics'
 
@@ -63,14 +73,16 @@ class UserMetrics(db.Model, SerializerMixin):
     weight = db.Column(db.Float)
     body_fat = db.Column(db.Float)
 
+    user = db.relationship('User', back_populates='user_metrics')
+
 class UserWorkoutRoutine(db.Model, SerializerMixin):
     __tablename__ = 'user_workout_routine'
 
     serialize_rules = ('-user', '-workout_routine')
-    
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     workout_routine_id = db.Column(db.Integer, db.ForeignKey('workout_routines.id'), primary_key=True)
 
-    user = db.relationship('User', back_populates='user_workout_routine')
-    workout_routine = db.relationship('WorkoutRoutine', back_populates='user_workout_routine')
+    user = db.relationship('User', back_populates='workout_routines')
+    workout_routine = db.relationship('WorkoutRoutine', back_populates='users')
