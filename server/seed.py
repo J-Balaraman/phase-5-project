@@ -1,80 +1,84 @@
-from random import randint, choice as rc
-from app import app
-from models import db, User, WorkoutRoutine, ExerciseLog, UserMetrics
+from datetime import date
+from app import app, db
+from models import User, WorkoutRoutine, ExerciseLog, UserMetrics, UserWorkoutRoutine
 from werkzeug.security import generate_password_hash
 
-def create_users():
-    users = [
-        User(username="john_doe", email="john@example.com", password=generate_password_hash("password123", method='pbkdf2:sha256')),
-        User(username="jane_smith", email="jane@example.com", password=generate_password_hash("password456", method='pbkdf2:sha256'))
-    ]
-    return users
-
-def create_workout_routines():
-    routines = [
-        WorkoutRoutine(
-            name="Full Body Workout",
-            description="A full body workout routine",
-            sunday="Rest",
-            monday="Squats, Deadlifts",
-            tuesday="Bench Press, Rows",
-            wednesday="Rest",
-            thursday="Overhead Press, Pull-ups",
-            friday="Rest",
-            saturday="Cardio"
-        ),
-        WorkoutRoutine(
-            name="Push Pull Legs",
-            description="A push pull legs routine",
-            sunday="Push: Bench Press, Overhead Press",
-            monday="Pull: Deadlifts, Rows",
-            tuesday="Legs: Squats, Lunges",
-            wednesday="Rest",
-            thursday="Push: Bench Press, Overhead Press",
-            friday="Pull: Deadlifts, Rows",
-            saturday="Legs: Squats, Lunges"
-        )
-    ]
-    return routines
-
-def create_exercise_logs(users):
-    logs = [
-        ExerciseLog(user_id=users[0].id, date="2023-01-01", description="Squats, Deadlifts"),
-        ExerciseLog(user_id=users[0].id, date="2023-01-02", description="Bench Press, Rows")
-    ]
-    return logs
-
-def create_user_metrics(users):
-    metrics = [
-        UserMetrics(user_id=users[0].id, date="2023-01-01", weight=70.0, body_fat=15.0),
-        UserMetrics(user_id=users[0].id, date="2023-01-02", weight=70.5, body_fat=14.8)
-    ]
-    return metrics
-
-if __name__ == '__main__':
+def clear_db():
     with app.app_context():
-        print("Clearing db...")
         db.drop_all()
         db.create_all()
 
-        print("Seeding users...")
-        users = create_users()
-        db.session.add_all(users)
+def seed_users():
+    with app.app_context():
+        users = [
+            User(username='jdoe', email='jdoe@example.com', password=generate_password_hash('password', method='pbkdf2:sha256')),
+            User(username='asmith', email='asmith@example.com', password=generate_password_hash('password', method='pbkdf2:sha256')),
+            User(username='mjane', email='mjane@example.com', password=generate_password_hash('password', method='pbkdf2:sha256'))
+        ]
+        db.session.bulk_save_objects(users)
         db.session.commit()
 
-        print("Seeding workout routines...")
-        routines = create_workout_routines()
-        db.session.add_all(routines)
+def seed_workout_routines():
+    with app.app_context():
+        workout_routines = [
+            WorkoutRoutine(name='Full Body Workout', description='A complete full body workout', sunday='Rest', monday='Legs', tuesday='Arms', wednesday='Rest', thursday='Chest', friday='Back', saturday='Rest'),
+            WorkoutRoutine(name='Upper Body Workout', description='Upper body focus', sunday='Rest', monday='Chest', tuesday='Back', wednesday='Rest', thursday='Arms', friday='Shoulders', saturday='Rest'),
+            WorkoutRoutine(name='Lower Body Workout', description='Lower body focus', sunday='Rest', monday='Legs', tuesday='Legs', wednesday='Rest', thursday='Legs', friday='Legs', saturday='Rest'),
+            WorkoutRoutine(name='Cardio Workout', description='Cardio exercises', sunday='Running', monday='Biking', tuesday='Swimming', wednesday='Running', thursday='Biking', friday='Swimming', saturday='Rest')
+        ]
+        db.session.bulk_save_objects(workout_routines)
         db.session.commit()
 
-        print("Seeding exercise logs...")
-        logs = create_exercise_logs(users)
-        db.session.add_all(logs)
+def seed_exercise_logs():
+    with app.app_context():
+        exercise_logs = [
+            {"user_id": 1, "date": date(2023, 1, 1), "description": 'Squats, Deadlifts'},
+            {"user_id": 1, "date": date(2023, 1, 2), "description": 'Bench Press, Rows'},
+            {"user_id": 2, "date": date(2023, 1, 1), "description": 'Running, Biking'},
+            {"user_id": 2, "date": date(2023, 1, 3), "description": 'Pull-ups, Push-ups'},
+            {"user_id": 3, "date": date(2023, 1, 2), "description": 'Yoga, Stretching'},
+            {"user_id": 3, "date": date(2023, 1, 4), "description": 'Swimming, Jump Rope'}
+        ]
+        db.session.bulk_insert_mappings(ExerciseLog, exercise_logs)
         db.session.commit()
 
-        print("Seeding user metrics...")
-        metrics = create_user_metrics(users)
-        db.session.add_all(metrics)
+def seed_user_metrics():
+    with app.app_context():
+        user_metrics = [
+            UserMetrics(user_id=1, date=date(2023, 1, 1), weight=150, body_fat=20),
+            UserMetrics(user_id=1, date=date(2023, 1, 2), weight=151, body_fat=19.8),
+            UserMetrics(user_id=2, date=date(2023, 1, 1), weight=160, body_fat=18),
+            UserMetrics(user_id=2, date=date(2023, 1, 3), weight=161, body_fat=17.5),
+            UserMetrics(user_id=3, date=date(2023, 1, 2), weight=140, body_fat=22),
+            UserMetrics(user_id=3, date=date(2023, 1, 4), weight=139, body_fat=21.8)
+        ]
+        db.session.bulk_save_objects(user_metrics)
         db.session.commit()
 
-        print("Done seeding!")
+def seed_user_workout_routines():
+    with app.app_context():
+        user_workout_routine_link = [
+            UserWorkoutRoutine(user_id=1, workout_routine_id=1),
+            UserWorkoutRoutine(user_id=1, workout_routine_id=2),
+            UserWorkoutRoutine(user_id=2, workout_routine_id=3),
+            UserWorkoutRoutine(user_id=2, workout_routine_id=4),
+            UserWorkoutRoutine(user_id=3, workout_routine_id=1),
+            UserWorkoutRoutine(user_id=3, workout_routine_id=4)
+        ]
+        db.session.bulk_save_objects(user_workout_routine_link)
+        db.session.commit()
+
+if __name__ == '__main__':
+    print("Clearing db...")
+    clear_db()
+    print("Seeding users...")
+    seed_users()
+    print("Seeding workout routines...")
+    seed_workout_routines()
+    print("Seeding exercise logs...")
+    seed_exercise_logs()
+    print("Seeding user metrics...")
+    seed_user_metrics()
+    print("Seeding user workout routines...")
+    seed_user_workout_routines()
+    print("Done!")

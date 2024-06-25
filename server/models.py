@@ -6,9 +6,9 @@ from config import db
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
-    serialize_rules = ('-user_workout_routine', '-password')
+    serialize_rules = ('-workout_routines', '-password')
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
@@ -37,7 +37,7 @@ class WorkoutRoutine(db.Model, SerializerMixin):
 
     serialize_rules = ('-user_workout_routine')
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
     sunday = db.Column(db.Text, nullable=False)
@@ -57,7 +57,7 @@ class WorkoutRoutine(db.Model, SerializerMixin):
 class ExerciseLog(db.Model, SerializerMixin):
     __tablename__ = 'exercise_logs'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text, nullable=False)
@@ -67,7 +67,7 @@ class ExerciseLog(db.Model, SerializerMixin):
 class UserMetrics(db.Model, SerializerMixin):
     __tablename__ = 'user_metrics'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     weight = db.Column(db.Float)
@@ -80,9 +80,5 @@ class UserWorkoutRoutine(db.Model, SerializerMixin):
 
     serialize_rules = ('-user', '-workout_routine')
 
-    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     workout_routine_id = db.Column(db.Integer, db.ForeignKey('workout_routines.id'), primary_key=True)
-
-    user = db.relationship('User', back_populates='workout_routines')
-    workout_routine = db.relationship('WorkoutRoutine', back_populates='users')
