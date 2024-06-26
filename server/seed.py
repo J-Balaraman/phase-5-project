@@ -45,12 +45,12 @@ def seed_exercise_logs():
 def seed_user_metrics():
     with app.app_context():
         user_metrics = [
-            UserMetrics(user_id=1, date=date(2023, 1, 1), weight=150, body_fat=20),
-            UserMetrics(user_id=1, date=date(2023, 1, 2), weight=151, body_fat=19.8),
-            UserMetrics(user_id=2, date=date(2023, 1, 1), weight=160, body_fat=18),
-            UserMetrics(user_id=2, date=date(2023, 1, 3), weight=161, body_fat=17.5),
-            UserMetrics(user_id=3, date=date(2023, 1, 2), weight=140, body_fat=22),
-            UserMetrics(user_id=3, date=date(2023, 1, 4), weight=139, body_fat=21.8)
+            UserMetrics(user_id=1, date=date(2024, 1, 1), weight=150, body_fat=20),
+            UserMetrics(user_id=1, date=date(2024, 1, 2), weight=151, body_fat=19.8),
+            UserMetrics(user_id=2, date=date(2024, 1, 1), weight=160, body_fat=18),
+            UserMetrics(user_id=2, date=date(2024, 1, 3), weight=161, body_fat=17.5),
+            UserMetrics(user_id=3, date=date(2024, 1, 2), weight=140, body_fat=22),
+            UserMetrics(user_id=3, date=date(2024, 1, 4), weight=139, body_fat=21.8)
         ]
         db.session.bulk_save_objects(user_metrics)
         db.session.commit()

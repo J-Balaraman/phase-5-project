@@ -5,3 +5,6 @@
   --text: hsla(0, 0%, 100%, 0.88);
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
