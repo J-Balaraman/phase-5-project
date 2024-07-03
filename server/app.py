@@ -9,14 +9,14 @@ DATABASE = os.environ.get("DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db'
 
 @app.route('/')
 def index():
-    return '<h1>Phase 5 Project Sample Text</h1>'
+    return '<h1>Phase 5 Project Server</h1>'
 
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
+    username = data['username']
+    email = data['email']
+    password = data['password']
 
     if User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
         return jsonify({"message": "Username or email already exists"}), 400
@@ -31,16 +31,29 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    email = data['email']
+    password = data['password']
 
     user = User.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password, password):
         session['user_id'] = user.id
-        return jsonify({"message": "Logged in successfully"}), 200
+        user_data = {
+            "username": user.username,
+            "email": user.email,
+            "active_workout_id": user.active_workout_id,
+            "workout_routines": [routine.name for routine in user.workout_routines],
+            "exercise_logs": [log.description for log in user.exercise_logs],
+            "user_metrics": [{"date": metric.date, "weight": metric.weight, "body_fat": metric.body_fat} for metric in user.user_metrics]
+        }
+        return jsonify({
+            "message": "Logged in successfully",
+            "user": user_data,
+            "token": "your_token_here"  # You might want to generate a token if using JWT or other methods
+        }), 200
 
     return jsonify({"message": "Invalid email or password"}), 401
+
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
@@ -67,15 +80,15 @@ def workouts():
     if request.method == 'POST':
         data = request.get_json()
         new_workout = WorkoutRoutine(
-            name=data.get('name'),
-            description=data.get('description'),
-            sunday=data.get('sunday'),
-            monday=data.get('monday'),
-            tuesday=data.get('tuesday'),
-            wednesday=data.get('wednesday'),
-            thursday=data.get('thursday'),
-            friday=data.get('friday'),
-            saturday=data.get('saturday')
+            name=data['name'],
+            description=data['description'],
+            sunday=data['sunday'],
+            monday=data['monday'],
+            tuesday=data['tuesday'],
+            wednesday=data['wednesday'],
+            thursday=data['thursday'],
+            friday=data['friday'],
+            saturday=data['saturday']
         )
         db.session.add(new_workout)
         db.session.commit()
@@ -115,16 +128,16 @@ def workouts_by_id(workout_id):
 def create_workout():
     data = request.get_json()
     new_workout = WorkoutRoutine(
-        name=data.get('name'),
-        description=data.get('description'),
-        sunday=data.get('sunday'),
-        monday=data.get('monday'),
-        tuesday=data.get('tuesday'),
-        wednesday=data.get('wednesday'),
-        thursday=data.get('thursday'),
-        friday=data.get('friday'),
-        saturday=data.get('saturday')
-    )
+            name=data['name'],
+            description=data['description'],
+            sunday=data['sunday'],
+            monday=data['monday'],
+            tuesday=data['tuesday'],
+            wednesday=data['wednesday'],
+            thursday=data['thursday'],
+            friday=data['friday'],
+            saturday=data['saturday']
+        )
     db.session.add(new_workout)
     db.session.commit()
     return jsonify({"message": "Workout created successfully"}), 201
@@ -141,25 +154,25 @@ def user_logs():
 
     if request.method == 'POST':
         data = request.get_json()
-        new_log = ExerciseLog(user_id=user_id, date=data.get('date'), description=data.get('description'))
+        new_log = ExerciseLog(user_id=user_id, date=data['date'], description=data['description'])
         db.session.add(new_log)
         db.session.commit()
         return jsonify({"message": "Log created successfully"}), 201
 
     if request.method == 'PATCH':
         data = request.get_json()
-        log = ExerciseLog.query.get(data.get('id'))
+        log = ExerciseLog.query.get(data['id'])
         if log.user_id != user_id:
             return jsonify({"message": "Not authorized"}), 403
 
-        log.date = data.get('date')
-        log.description = data.get('description')
+        log.date = data['date']
+        log.description = data['description']
         db.session.commit()
         return jsonify({"message": "Log updated successfully"}), 200
 
     if request.method == 'DELETE':
         data = request.get_json()
-        log = ExerciseLog.query.get(data.get('id'))
+        log = ExerciseLog.query.get(data['id'])
         if log.user_id != user_id:
             return jsonify({"message": "Not authorized"}), 403
 
@@ -177,4 +190,4 @@ def user_graph():
     return jsonify([{"date": metric.date, "weight": metric.weight, "body_fat": metric.body_fat} for metric in metrics]), 200
 
 if __name__ == '__main__':
-    app.run(port=5555, debug=True)
+    app.run(port=5000, debug=True)

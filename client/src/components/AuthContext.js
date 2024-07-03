@@ -5,22 +5,37 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       axios.get('/dashboard')
-        .then(response => setUser(response.data))
-        .catch(() => setUser(null));
+        .then(response => {
+          setUser(response.data);
+          setLoading(false);
+          console.log("User fetched on mount:", response.data);  // Debug log
+        })
+        .catch(() => {
+          setUser(null);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
   }, []);
 
   const login = async (email, password) => {
-    const response = await axios.post('/login', { email, password });
-    localStorage.setItem('token', response.data.token);
-    setUser(response.data.user);
-  };
+    try {
+      const response = await axios.post('/login', { email, password });
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+      setUser(user);
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };  
 
   const logout = () => {
     localStorage.removeItem('token');
@@ -28,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

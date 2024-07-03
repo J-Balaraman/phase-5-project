@@ -1,9 +1,15 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import AuthContext from './AuthContext';
 
 const NavBar = () => {
   const { user, logout } = useContext(AuthContext);
+  const history = useHistory();
+
+  const handleLogout = () => {
+    logout();
+    history.push('/login');
+  };
 
   return (
     <nav className="p-4 bg-gray-800 text-white">
@@ -15,7 +21,7 @@ const NavBar = () => {
             <li><Link to="/create_workout">Create Workout</Link></li>
             <li><Link to="/user_logs">Logs</Link></li>
             <li><Link to="/user_graphs">User Graphs</Link></li>
-            <li><button onClick={logout}>Logout</button></li>
+            <li><button onClick={handleLogout}>Logout</button></li>
           </>
         ) : (
           <>
