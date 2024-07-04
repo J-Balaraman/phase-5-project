@@ -1,6 +1,6 @@
 import os
 from flask import request, jsonify, session
-from config import app, db, api
+from config import app, db
 from models import User, WorkoutRoutine, ExerciseLog, UserMetrics, UserWorkoutRoutine
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -49,7 +49,7 @@ def login():
         return jsonify({
             "message": "Logged in successfully",
             "user": user_data,
-            "token": "your_token_here"  # You might want to generate a token if using JWT or other methods
+            "token": "1850980026"
         }), 200
 
     return jsonify({"message": "Invalid email or password"}), 401

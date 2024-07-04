@@ -10,7 +10,13 @@ const CreateWorkout = () => {
     initialValues: {
       name: '',
       description: '',
-      days: [{ exercises: '' }],
+      sunday: '',
+      monday: '',
+      tuesday: '',
+      wednesday: '',
+      thursday: '',
+      friday: '',
+      saturday: ''
     },
     onSubmit: async (values) => {
       try {
@@ -21,10 +27,6 @@ const CreateWorkout = () => {
       }
     },
   });
-
-  const addDay = () => {
-    formik.setFieldValue('days', [...formik.values.days, { exercises: '' }]);
-  };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-4 border rounded shadow">
@@ -50,18 +52,67 @@ const CreateWorkout = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Days</label>
-          {formik.values.days.map((day, index) => (
-            <div key={index} className="mb-2">
-              <textarea
-                name={`days.${index}.exercises`}
-                onChange={formik.handleChange}
-                value={day.exercises}
-                className="w-full p-2 border rounded"
-              />
-            </div>
-          ))}
-          <button type="button" onClick={addDay} className="p-2 bg-gray-500 text-white rounded">Add Day</button>
+          <label className="block text-gray-700">Sunday</label>
+          <textarea
+            name="sunday"
+            onChange={formik.handleChange}
+            value={formik.values.sunday}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Monday</label>
+          <textarea
+            name="monday"
+            onChange={formik.handleChange}
+            value={formik.values.monday}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Tuesday</label>
+          <textarea
+            name="tuesday"
+            onChange={formik.handleChange}
+            value={formik.values.tuesday}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Wednesday</label>
+          <textarea
+            name="wednesday"
+            onChange={formik.handleChange}
+            value={formik.values.wednesday}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Thursday</label>
+          <textarea
+            name="thursday"
+            onChange={formik.handleChange}
+            value={formik.values.thursday}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Friday</label>
+          <textarea
+            name="friday"
+            onChange={formik.handleChange}
+            value={formik.values.friday}
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Saturday</label>
+          <textarea
+            name="saturday"
+            onChange={formik.handleChange}
+            value={formik.values.saturday}
+            className="w-full p-2 border rounded"
+          />
         </div>
         <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">Create</button>
       </form>

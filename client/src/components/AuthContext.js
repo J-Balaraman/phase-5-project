@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
         .then(response => {
           setUser(response.data);
           setLoading(false);
-          console.log("User fetched on mount:", response.data);  // Debug log
+          console.log("User fetched on mount:", response.data);
         })
         .catch(() => {
           setUser(null);
