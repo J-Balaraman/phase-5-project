@@ -95,7 +95,7 @@ def workouts():
         db.session.commit()
         return jsonify({"message": "Workout created successfully"}), 201
 
-@app.route('/workouts/<int:workout_id>', methods=['GET', 'POST'])
+@app.route('/workouts/<int:workout_id>', methods=['GET', 'POST', 'PATCH'])
 def workouts_by_id(workout_id):
     workout = WorkoutRoutine.query.get(workout_id)
     if not workout:
@@ -124,6 +124,16 @@ def workouts_by_id(workout_id):
         user.workout_routines.append(workout)
         db.session.commit()
         return jsonify({"message": "Workout added to user successfully"}), 201
+
+    if request.method == 'PATCH':
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"message": "Not authenticated"}), 401
+
+        user = User.query.get(user_id)
+        user.active_workout_id = workout_id
+        db.session.commit()
+        return jsonify({"message": "Workout set as active successfully"}), 200
 
 @app.route('/create_workout', methods=['POST'])
 def create_workout():
@@ -155,7 +165,9 @@ def user_logs():
 
     if request.method == 'POST':
         data = request.get_json()
+
         data["date"] = datetime.strptime(data["date"], "%Y-%m-%d").date()
+
         new_log = ExerciseLog(user_id=user_id, date=data['date'], description=data['description'])
         db.session.add(new_log)
         db.session.commit()
@@ -163,12 +175,19 @@ def user_logs():
 
     if request.method == 'PATCH':
         data = request.get_json()
-        log = ExerciseLog.query.get(data['id'])
-        if log.user_id != user_id:
-            return jsonify({"message": "Not authorized"}), 403
 
-        log.date = data['date']
-        log.description = data['description']
+        log_id = data.get('id')
+        new_date = data.get('date')
+        new_description = data.get('description')
+
+        if new_date:
+            new_date = datetime.strptime(new_date, '%Y-%m-%d').date()
+
+        log = ExerciseLog.query.get(log_id)
+        if new_date:
+            log.date = new_date
+        if new_description:
+            log.description = new_description
         db.session.commit()
         return jsonify({"message": "Log updated successfully"}), 200
 
@@ -182,14 +201,14 @@ def user_logs():
         db.session.commit()
         return jsonify({"message": "Log deleted successfully"}), 200
 
-@app.route('/user_graph', methods=['GET'])
-def user_graph():
+@app.route('/user_metrics', methods=['GET'])
+def user_metrics():
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({"message": "Not authenticated"}), 401
 
     metrics = UserMetrics.query.filter_by(user_id=user_id).all()
-    return jsonify([{"date": metric.date, "weight": metric.weight, "body_fat": metric.body_fat} for metric in metrics]), 200
+    return jsonify([{"date": metric.date.isoformat(), "weight": metric.weight, "body_fat": metric.body_fat} for metric in metrics]), 200
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
