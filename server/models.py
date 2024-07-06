@@ -8,9 +8,9 @@ class User(db.Model, SerializerMixin):
     serialize_rules = ('-workout_routines', '-password')
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(255), unique=True, nullable=False)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
+    username = db.Column(db.String, unique=True, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
     active_workout_id = db.Column(db.Integer)
 
     workout_routines = db.relationship(
@@ -37,7 +37,7 @@ class WorkoutRoutine(db.Model, SerializerMixin):
     serialize_rules = ('-user_workout_routine')
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String, nullable=False)
     description = db.Column(db.Text, nullable=False)
     sunday = db.Column(db.Text, nullable=False)
     monday = db.Column(db.Text, nullable=False)

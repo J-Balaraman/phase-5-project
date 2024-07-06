@@ -3,6 +3,7 @@ from flask import request, jsonify, session
 from config import app, db
 from models import User, WorkoutRoutine, ExerciseLog, UserMetrics, UserWorkoutRoutine
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE = os.environ.get("DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
@@ -150,10 +151,11 @@ def user_logs():
 
     if request.method == 'GET':
         logs = ExerciseLog.query.filter_by(user_id=user_id).all()
-        return jsonify([{"id": log.id, "date": log.date, "description": log.description} for log in logs]), 200
+        return jsonify([{"id": log.id, "date": log.date.isoformat(), "description": log.description} for log in logs]), 200
 
     if request.method == 'POST':
         data = request.get_json()
+        data["date"] = datetime.strptime(data["date"], "%Y-%m-%d").date()
         new_log = ExerciseLog(user_id=user_id, date=data['date'], description=data['description'])
         db.session.add(new_log)
         db.session.commit()
