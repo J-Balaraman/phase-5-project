@@ -20,7 +20,7 @@ const NavBar = () => {
             <li><Link to="/workouts">Workouts</Link></li>
             <li><Link to="/create_workout">Create Workout</Link></li>
             <li><Link to="/user_logs">Logs</Link></li>
-            <li><Link to="/user_graphs">User Graphs</Link></li>
+            <li><Link to="/user_metrics">User Graphs</Link></li>
             <li><button onClick={handleLogout}>Logout</button></li>
           </>
         ) : (

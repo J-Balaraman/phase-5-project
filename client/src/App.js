@@ -25,7 +25,7 @@ const App = () => {
             <Route path="/workouts/:id" component={WorkoutDetails} />
             <Route path="/create_workout" component={CreateWorkout} />
             <Route path="/user_logs" component={Logs} />
-            <Route path="/user_graphs" component={UserGraph} />
+            <Route path="/user_metrics" component={UserGraph} />
           </Switch>
         </div>
       </Router>
