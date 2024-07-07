@@ -63,14 +63,17 @@ def dashboard():
         return jsonify({"message": "Not authenticated"}), 401
 
     user = User.query.get(user_id)
+    active_workout = WorkoutRoutine.query.get(user.active_workout_id)
+
     return jsonify({
         "username": user.username,
         "email": user.email,
-        "active_workout_id": user.active_workout_id,
-        "workout_routines": [routine.name for routine in user.workout_routines],
+        "active_workout": active_workout.name if active_workout else None,
+        "workout_routines": [{"id": routine.id, "name": routine.name} for routine in user.workout_routines],
         "exercise_logs": [log.description for log in user.exercise_logs],
         "user_metrics": [{"date": metric.date, "weight": metric.weight, "body_fat": metric.body_fat} for metric in user.user_metrics]
     }), 200
+
 
 @app.route('/workouts', methods=['GET', 'POST'])
 def workouts():
@@ -95,7 +98,7 @@ def workouts():
         db.session.commit()
         return jsonify({"message": "Workout created successfully"}), 201
 
-@app.route('/workouts/<int:workout_id>', methods=['GET', 'POST', 'PATCH'])
+@app.route('/workouts/<int:workout_id>', methods=['GET', 'POST', 'PATCH', 'DELETE'])
 def workouts_by_id(workout_id):
     workout = WorkoutRoutine.query.get(workout_id)
     if not workout:
@@ -134,6 +137,21 @@ def workouts_by_id(workout_id):
         user.active_workout_id = workout_id
         db.session.commit()
         return jsonify({"message": "Workout set as active successfully"}), 200
+    
+    if request.method == 'DELETE':
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"message": "Not authenticated"}), 401
+        
+        user = User.query.get(user_id)
+        if workout in user.workout_routines:
+            user.workout_routines.remove(workout)
+            db.session.commit()
+            return jsonify({"message": "Workout removed from user successfully"}), 200
+        else:
+            return jsonify({"message": "Workout not found in user's routines"}), 404
+
+
 
 @app.route('/create_workout', methods=['POST'])
 def create_workout():

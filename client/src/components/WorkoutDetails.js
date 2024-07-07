@@ -19,9 +19,15 @@ const WorkoutDetails = () => {
   };
 
   const setActiveWorkout = () => {
-    axios.patch(`/workouts/${id}/set_active`)
+    axios.patch(`/workouts/${id}`)
       .then(response => alert('Workout set as active successfully'))
       .catch(error => console.error('Error setting active workout', error));
+  };
+
+  const deleteWorkout = () => {
+    axios.delete(`/workouts/${id}`)
+      .then(response => alert('Workout deleted successfully'))
+      .catch(error => console.error('Error deleting workout', error));
   };
 
   if (!workout) {
@@ -50,6 +56,7 @@ const WorkoutDetails = () => {
       </ul>
       <button onClick={addWorkoutToUser} className="bg-blue-500 text-white p-2 rounded mt-4">Add Workout</button>
       <button onClick={setActiveWorkout} className="bg-green-500 text-white p-2 rounded mt-4">Set as Active Workout</button>
+      <button onClick={deleteWorkout} className="bg-red-500 text-white p-2 rounded mt-4">Delete Workout</button>
     </div>
   );
 };

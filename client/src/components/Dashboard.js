@@ -20,7 +20,7 @@ const Dashboard = () => {
       <h2 className="text-xl font-bold mb-4">Dashboard</h2>
       <p><strong>Username:</strong> {user.username}</p>
       <p><strong>Email:</strong> {user.email}</p>
-      <p><strong>Current Workout Routine:</strong> {user.active_workout_id ? user.active_workout_id : 'None'}</p>
+      <p><strong>Current Workout Routine:</strong> {user.active_workout ? user.active_workout : 'None'}</p>
       <p><strong>Workout Routines:</strong></p>
       <ul>
         {user.workout_routines.map((routine, index) => (
