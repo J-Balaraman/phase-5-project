@@ -45,7 +45,7 @@ def login():
             "active_workout_id": user.active_workout_id,
             "workout_routines": [routine.name for routine in user.workout_routines],
             "exercise_logs": [log.description for log in user.exercise_logs],
-            "user_metrics": [{"date": metric.date, "weight": metric.weight, "body_fat": metric.body_fat} for metric in user.user_metrics]
+            "user_metrics": [{"date": metric.date.isoformat(), "weight": metric.weight, "body_fat": metric.body_fat} for metric in user.user_metrics]
         }
         return jsonify({
             "message": "Logged in successfully",
@@ -63,6 +63,9 @@ def dashboard():
         return jsonify({"message": "Not authenticated"}), 401
 
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
     active_workout = WorkoutRoutine.query.get(user.active_workout_id)
 
     return jsonify({
@@ -71,8 +74,9 @@ def dashboard():
         "active_workout": active_workout.name if active_workout else None,
         "workout_routines": [{"id": routine.id, "name": routine.name} for routine in user.workout_routines],
         "exercise_logs": [log.description for log in user.exercise_logs],
-        "user_metrics": [{"date": metric.date, "weight": metric.weight, "body_fat": metric.body_fat} for metric in user.user_metrics]
+        "user_metrics": [{"date": metric.date.isoformat(), "weight": metric.weight, "body_fat": metric.body_fat} for metric in user.user_metrics]
     }), 200
+
 
 
 @app.route('/workouts', methods=['GET', 'POST'])
@@ -144,12 +148,14 @@ def workouts_by_id(workout_id):
             return jsonify({"message": "Not authenticated"}), 401
         
         user = User.query.get(user_id)
-        if workout in user.workout_routines:
-            user.workout_routines.remove(workout)
+        user_workout = UserWorkoutRoutine.query.filter_by(user_id=user_id, workout_routine_id=workout_id).first()
+        if user_workout:
+            db.session.delete(user_workout)
             db.session.commit()
             return jsonify({"message": "Workout removed from user successfully"}), 200
         else:
             return jsonify({"message": "Workout not found in user's routines"}), 404
+
 
 
 
@@ -194,9 +200,9 @@ def user_logs():
     if request.method == 'PATCH':
         data = request.get_json()
 
-        log_id = data.get('id')
-        new_date = data.get('date')
-        new_description = data.get('description')
+        log_id = data['id']
+        new_date = data['date']
+        new_description = data['description']
 
         if new_date:
             new_date = datetime.strptime(new_date, '%Y-%m-%d').date()
@@ -219,7 +225,7 @@ def user_logs():
         db.session.commit()
         return jsonify({"message": "Log deleted successfully"}), 200
 
-@app.route('/user_metrics', methods=['GET'])
+@app.route('/user_metrics', methods=['GET', 'POST'])
 def user_metrics():
     user_id = session.get('user_id')
     if not user_id:

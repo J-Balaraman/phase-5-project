@@ -9,6 +9,7 @@ import WorkoutDetails from './components/WorkoutDetails';
 import CreateWorkout from './components/CreateWorkout';
 import Logs from './components/Logs';
 import UserGraph from './components/UserGraph';
+import Welcome from './components/Welcome';
 import { AuthProvider } from './components/AuthContext';
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
         <NavBar />
         <div className="container mx-auto">
           <Switch>
+            <Route path="/" exact component={Welcome} />
             <Route path="/dashboard" component={Dashboard} />
             <Route path="/login" component={Login} />
             <Route path="/register" component={Register} />

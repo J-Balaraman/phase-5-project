@@ -8,34 +8,31 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      axios.get('/dashboard')
-        .then(response => {
-          setUser(response.data);
-          setLoading(false);
-          console.log("User fetched on mount:", response.data);
-        })
-        .catch(() => {
-          setUser(null);
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get('/dashboard');
+        setUser(response.data);
+      } catch (error) {
+        console.error("Error fetching dashboard:", error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
   }, []);
 
   const login = async (email, password) => {
     try {
       const response = await axios.post('/login', { email, password });
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      setUser(user);
+      localStorage.setItem('token', response.data.token);
+      setUser(response.data.user);
     } catch (error) {
       console.error("Login error:", error);
+      throw error;
     }
-  };  
+  };
 
   const logout = () => {
     localStorage.removeItem('token');

@@ -11,13 +11,10 @@ const NavBar = () => {
     history.push('/login');
   };
 
-  const goBack = () => {
-    history.goBack();
-  };
-
   return (
     <nav className="p-4 bg-gray-800 text-white flex justify-between">
       <ul className="flex space-x-4">
+        <li><Link to="/">Home</Link></li>
         {user ? (
           <>
             <li><Link to="/dashboard">Dashboard</Link></li>
@@ -26,7 +23,7 @@ const NavBar = () => {
             <li><Link to="/user_logs">Logs</Link></li>
             <li><Link to="/user_metrics">User Graphs</Link></li>
             <li><button onClick={handleLogout}>Logout</button></li>
-            <li><button onClick={goBack} className="bg-blue-500 text-white px-4 py-2 rounded">Back</button></li>
+            <li><button onClick={history.goBack()} className="bg-blue-500 text-white px-4 py-2 rounded">Back</button></li>
           </>
         ) : (
           <>

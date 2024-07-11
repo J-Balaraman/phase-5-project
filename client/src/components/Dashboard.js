@@ -1,38 +1,63 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import axios from 'axios';
 import AuthContext from './AuthContext';
 
 const Dashboard = () => {
   const { user, loading } = useContext(AuthContext);
+  const [activeWorkout, setActiveWorkout] = useState(null);
+  const [workoutRoutines, setWorkoutRoutines] = useState([]);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  useEffect(() => {
+    if (user) {
+      setActiveWorkout(user.active_workout);
+      setWorkoutRoutines(user.workout_routines);
+    }
+  }, [user]);
 
   if (!user) {
-    console.log("User not found, redirecting to login");
-    return <p>Broken...</p>;
+    return <p>You are not logged in. Please log in to view your dashboard.</p>;
   }
 
-  const latest_metric = user.user_metrics[user.user_metrics.length - 1];
+  const fetchDashboardData = async () => {
+    try {
+      const response = await axios.get('/dashboard');
+      setActiveWorkout(response.data.active_workout);
+      setWorkoutRoutines(response.data.workout_routines);
+    } catch (error) {
+      console.error('Error fetching dashboard data', error);
+    }
+  };
+
+  const { username, email, exercise_logs, user_metrics } = user;
+
+  const latest_metric = user.user_metrics.length > 0 ? user.user_metrics[user.user_metrics.length - 1] : null;
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-4 border rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Dashboard</h2>
-      <p><strong>Username:</strong> {user.username}</p>
-      <p><strong>Email:</strong> {user.email}</p>
-      <p><strong>Current Workout Routine:</strong> {user.active_workout ? user.active_workout : 'None'}</p>
-      <p><strong>Workout Routines:</strong></p>
-      <ul>
-        {user.workout_routines.map((routine, index) => (
-          <li key={index}>
-            <a href={`/workouts/${routine.id}`} className="text-blue-500 underline">
-              {routine.name}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <p><strong>Latest Metric:</strong></p>
-      <li>{`Date: ${latest_metric.date}, Weight: ${latest_metric.weight}, Body Fat: ${latest_metric.body_fat}`}</li>
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      <p><strong>Username:</strong> {username}</p>
+      <p><strong>Email:</strong> {email}</p>
+      <p><strong>Active Workout:</strong> {activeWorkout || 'None'}</p>
+      <div>
+        <h2 className="text-xl font-bold mb-2">Workout Routines</h2>
+        {workoutRoutines.length === 0 ? (
+          <p>No workout routines available.</p>
+        ) : (
+          <ul>
+            {workoutRoutines.map(routine => (
+              <li key={routine.id}>{routine.name}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div>
+        <h2 className="text-xl font-bold mb-2">User Metrics</h2>
+        {user_metrics.length === 0 ? (
+          <p>No user metrics available.</p>
+        ) : (
+          <li>{`Date: ${latest_metric.date}, Weight: ${latest_metric.weight}, Body Fat: ${latest_metric.body_fat}`}</li>
+        )}
+      </div>
     </div>
   );
 };
