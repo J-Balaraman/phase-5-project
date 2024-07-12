@@ -1,12 +1,38 @@
 import os
+import jwt
 from flask import request, jsonify, session
 from config import app, db
 from models import User, WorkoutRoutine, ExerciseLog, UserMetrics, UserWorkoutRoutine
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
+from functools import wraps
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE = os.environ.get("DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
+
+SECRET_KEY = '1850980026'
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('x-access-token')
+        if not token:
+            return jsonify({"message": "Token is missing!"}), 401
+        try:
+            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            current_user = User.query.filter_by(id=data['user_id']).first()
+        except Exception as e:
+            return jsonify({"message": "Token is invalid!"}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+def generate_token(user_id):
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.utcnow() + timedelta(days=1)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+    return token
 
 @app.route('/')
 def index():
@@ -38,7 +64,7 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password, password):
-        session['user_id'] = user.id
+        token = generate_token(user.id)
         user_data = {
             "username": user.username,
             "email": user.email,
@@ -50,7 +76,7 @@ def login():
         return jsonify({
             "message": "Logged in successfully",
             "user": user_data,
-            "token": "1850980026"
+            "token": token
         }), 200
 
     return jsonify({"message": "Invalid email or password"}), 401
@@ -156,9 +182,6 @@ def workouts_by_id(workout_id):
         else:
             return jsonify({"message": "Workout not found in user's routines"}), 404
 
-
-
-
 @app.route('/create_workout', methods=['POST'])
 def create_workout():
     data = request.get_json()
@@ -189,9 +212,7 @@ def user_logs():
 
     if request.method == 'POST':
         data = request.get_json()
-
         data["date"] = datetime.strptime(data["date"], "%Y-%m-%d").date()
-
         new_log = ExerciseLog(user_id=user_id, date=data['date'], description=data['description'])
         db.session.add(new_log)
         db.session.commit()
@@ -199,7 +220,6 @@ def user_logs():
 
     if request.method == 'PATCH':
         data = request.get_json()
-
         log_id = data['id']
         new_date = data['date']
         new_description = data['description']
@@ -226,13 +246,46 @@ def user_logs():
         return jsonify({"message": "Log deleted successfully"}), 200
 
 @app.route('/user_metrics', methods=['GET', 'POST'])
-def user_metrics():
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({"message": "Not authenticated"}), 401
+@token_required
+def user_metrics(current_user):
+    if request.method == 'GET':
+        metrics = UserMetrics.query.filter_by(user_id=current_user.id).all()
+        return jsonify([{"date": metric.date.isoformat(), "weight": metric.weight, "body_fat": metric.body_fat} for metric in metrics]), 200
 
-    metrics = UserMetrics.query.filter_by(user_id=user_id).all()
-    return jsonify([{"date": metric.date.isoformat(), "weight": metric.weight, "body_fat": metric.body_fat} for metric in metrics]), 200
+    if request.method == 'POST':
+        data = request.get_json()
+        new_metric = UserMetrics(
+            date=datetime.strptime(data['date'], '%Y-%m-%d'),
+            weight=float(data['weight']),
+            body_fat=float(data['body_fat']),
+            user_id=current_user.id
+        )
+        db.session.add(new_metric)
+        db.session.commit()
+        return jsonify({
+            "date": new_metric.date.isoformat(),
+            "weight": new_metric.weight,
+            "body_fat": new_metric.body_fat
+        }), 201
+    
+#@app.route('/user_metrics', methods=['DELETE'])
+#@token_required
+#def delete_user_metric(current_user):
+#    data = request.get_json()
+#    metric_id = data.get('id')
+#
+#    if not metric_id:
+#        return jsonify({"message": "Metric ID is required"}), 400
+#
+#    metric = UserMetrics.query.filter_by(id=metric_id, user_id=current_user.id).first()
+#    if not metric:
+#        return jsonify({"message": "Metric not found"}), 404
+#
+#    db.session.delete(metric)
+#    db.session.commit()
+#    return jsonify({"message": "Metric deleted successfully"}), 200
+
+
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
