@@ -51,17 +51,19 @@ const UserGraph = () => {
       .catch(error => console.error('Error submitting new metric', error));
   };
 
-//  const handleDelete = (id) => {
-//    axios.delete('/user_metrics', { data: { id } }, {
-//        headers: { 'x-access-token': localStorage.getItem('token') }
-//    })
-//    .then(response => {
-//        setMetrics(metrics.filter(metric => metric.id !== id));
-//    })
-//    .catch(error => console.error('Error deleting metric', error));
-//};
-
-
+  const handleDelete = (id) => {
+    axios.delete('/user_metrics', {
+      headers: { 
+        'x-access-token': localStorage.getItem('token'), 
+        'Content-Type': 'application/json'
+      },
+      data: { id }
+    })
+    .then(response => {
+      setMetrics(metrics.filter(metric => metric.id !== id));
+    })
+    .catch(error => console.error('Error deleting metric', error));
+  };
 
   const weightData = {
     labels: metrics.length ? metrics.map(metric => metric.date) : [],
@@ -86,8 +88,6 @@ const UserGraph = () => {
       }
     ],
   };
-
-  /* <button onClick={() => handleDelete(metric.id)} className="ml-2 px-2 py-1 bg-red-500 text-white rounded">Delete</button> */
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-4 border rounded shadow">
@@ -120,7 +120,7 @@ const UserGraph = () => {
         {metrics.map(metric => (
           <li key={metric.id}>
             Date: {metric.date}, Weight: {metric.weight}, Body Fat: {metric.body_fat}
-
+            <button onClick={() => handleDelete(metric.id)} className="ml-2 px-2 py-1 bg-red-500 text-white rounded">Delete</button>
           </li>
         ))}
       </ul>

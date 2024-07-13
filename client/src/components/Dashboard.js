@@ -8,29 +8,31 @@ const Dashboard = () => {
   const [workoutRoutines, setWorkoutRoutines] = useState([]);
 
   useEffect(() => {
-    if (user) {
-      setActiveWorkout(user.active_workout);
-      setWorkoutRoutines(user.workout_routines);
-    }
+    const fetchDashboardData = async () => {
+      try {
+        if (user) {
+          const response = await axios.get('/dashboard');
+          setActiveWorkout(response.data.active_workout);
+          setWorkoutRoutines(response.data.workout_routines);
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data', error);
+      }
+    };
+
+    fetchDashboardData();
   }, [user]);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   if (!user) {
     return <p>You are not logged in. Please log in to view your dashboard.</p>;
   }
 
-  const fetchDashboardData = async () => {
-    try {
-      const response = await axios.get('/dashboard');
-      setActiveWorkout(response.data.active_workout);
-      setWorkoutRoutines(response.data.workout_routines);
-    } catch (error) {
-      console.error('Error fetching dashboard data', error);
-    }
-  };
-
-  const { username, email, exercise_logs, user_metrics } = user;
-
-  const latest_metric = user.user_metrics.length > 0 ? user.user_metrics[user.user_metrics.length - 1] : null;
+  const { username, email, user_metrics } = user;
+  const latest_metric = user_metrics.length > 0 ? user_metrics[user_metrics.length - 1] : null;
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-4 border rounded shadow">

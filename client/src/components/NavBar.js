@@ -23,7 +23,6 @@ const NavBar = () => {
             <li><Link to="/user_logs">Logs</Link></li>
             <li><Link to="/user_metrics">User Graphs</Link></li>
             <li><button onClick={handleLogout}>Logout</button></li>
-            <li><button onClick={history.goBack()} className="bg-blue-500 text-white px-4 py-2 rounded">Back</button></li>
           </>
         ) : (
           <>

@@ -7,19 +7,19 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get('/dashboard');
-        setUser(response.data);
-      } catch (error) {
-        console.error("Error fetching dashboard:", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchUser = async () => {
+    try {
+      const response = await axios.get('/dashboard');
+      setUser(response.data);
+    } catch (error) {
+      console.error("Error fetching dashboard:", error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUser();
   }, []);
 
@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post('/login', { email, password });
       localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
+      fetchUser();
     } catch (error) {
       console.error("Login error:", error);
       throw error;
