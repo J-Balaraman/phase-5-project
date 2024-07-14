@@ -7,31 +7,75 @@ const WorkoutDetails = () => {
   const [workout, setWorkout] = useState(null);
 
   useEffect(() => {
-    axios.get(`/workouts/${id}`)
-      .then(response => setWorkout(response.data))
-      .catch(error => console.error('Error fetching workout', error));
+    const fetchWorkout = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        };
+    
+        const response = await axios.get(`/workouts/${id}`, config);
+        setWorkout(response.data);
+      } catch (error) {
+        console.error('Error fetching workout', error);
+      }
+    };    
+
+    fetchWorkout();
   }, [id]);
 
-  const addWorkoutToUser = () => {
-    axios.post(`/workouts/${id}`)
-      .then(response => alert('Workout added successfully'))
-      .catch(error => console.error('Error adding workout', error));
-  };
+  const addWorkoutToUser = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+  
+      await axios.post(`/workouts/${id}`, {}, config);
+      alert('Workout added successfully');
+    } catch (error) {
+      console.error('Error adding workout', error);
+    }
+  };  
 
-  const setActiveWorkout = () => {
-    axios.patch(`/workouts/${id}`)
-      .then(response => alert('Workout set as active successfully'))
-      .catch(error => console.error('Error setting active workout', error));
-  };
+  const setActiveWorkout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+  
+      await axios.patch(`/workouts/${id}`, {}, config);
+      alert('Workout set as active successfully');
+    } catch (error) {
+      console.error('Error setting active workout', error);
+    }
+  };  
 
-  const deleteWorkout = () => {
-    axios.delete(`/workouts/${id}`)
-      .then(response => alert('Workout deleted successfully'))
-      .catch(error => console.error('Error deleting workout', error));
-  };
+  const deleteWorkout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      };
+  
+      await axios.delete(`/workouts/${id}`, config);
+      alert('Workout deleted successfully');
+    } catch (error) {
+      console.error('Error deleting workout', error);
+    }
+  };  
 
   if (!workout) {
-    return <p>Loading...</p>;
+    return <p></p>;
   }
 
   const days = [
@@ -56,7 +100,7 @@ const WorkoutDetails = () => {
       </ul>
       <button onClick={addWorkoutToUser} className="bg-blue-500 text-white p-2 rounded mt-4">Add Workout</button>
       <button onClick={setActiveWorkout} className="bg-green-500 text-white p-2 rounded mt-4">Set as Active Workout</button>
-      <button onClick={deleteWorkout} className="bg-red-500 text-white p-2 rounded mt-4">Delete Workout</button>
+      <button onClick={deleteWorkout} className="bg-red-500 text-white p-2 rounded mt-4">Delete Workout From Your Library</button>
     </div>
   );
 };

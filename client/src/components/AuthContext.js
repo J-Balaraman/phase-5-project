@@ -7,19 +7,25 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUser = async () => {
-    try {
-      const response = await axios.get('/dashboard');
-      setUser(response.data);
-    } catch (error) {
-      console.error("Error fetching dashboard:", error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        try {
+          const response = await axios.get('/dashboard');
+          setUser(response.data);
+        } catch (error) {
+          console.error("Error fetching dashboard:", error);
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
     fetchUser();
   }, []);
 
@@ -27,8 +33,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post('/login', { email, password });
       localStorage.setItem('token', response.data.token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       setUser(response.data.user);
-      fetchUser();
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -37,6 +43,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
