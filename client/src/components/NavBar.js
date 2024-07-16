@@ -12,7 +12,7 @@ const NavBar = () => {
   };
 
   return (
-    <nav className="p-4 bg-gray-800 text-white flex justify-between">
+    <nav className="p-4 bg-gray-800 text-white flex items-center">
       <ul className="flex space-x-4">
         <li><Link to="/">Home</Link></li>
         {user ? (
